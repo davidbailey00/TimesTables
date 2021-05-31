@@ -141,13 +141,32 @@ func getAllAnswers() -> Set<Int> {
     return Set(answers)
 }
 
+enum Answer: Identifiable {
+    case number(value: Int)
+    case animal(id: String)
+
+    var id: String {
+        switch self {
+        case .number(let value): return "\(value)"
+        case .animal(let id): return id
+        }
+    }
+}
+
+let animals = [
+    "bear", "buffalo", "chick", "chicken", "cow", "crocodile", "dog", "duck",
+    "elephant", "frog", "giraffe", "goat", "gorilla", "hippo", "horse",
+    "monkey", "moose", "narwhal", "owl", "panda", "parrot", "penguin", "pig",
+    "rabbit", "rhino", "sloth", "snake", "walrus", "whale", "zebra"
+]
+
 struct GameView: View {
     var questions: [Question]
     var exit: () -> Void
 
     @State private var score = 0
     @State private var questionNumber = 0
-    @State private var answers = [Int]()
+    @State private var answers = [Answer]()
     @State private var flipped = Bool.random()
 
     private var question: Question { questions[questionNumber] }
@@ -158,8 +177,13 @@ struct GameView: View {
     var body: some View {
         VStack {
             LazyVGrid(columns: columns, spacing: 8) {
-                ForEach(answers, id: \.self) { answer in
-                    AnswerButton(answer: answer, action: answerTapped)
+                ForEach(answers) { answer in
+                    switch answer {
+                    case .number(let value):
+                        AnswerButton(answer: value, action: answerTapped)
+                    case .animal(let id):
+                        AnimalBlock(animal: id)
+                    }
                 }
                 .animation(.spring())
             }
@@ -203,8 +227,14 @@ struct GameView: View {
             .shuffled()
             .filter { $0 != answer }
 
-        // take 15 + add correct answer + shuffle
-        answers = (allAnswers[..<15] + [answer]).shuffled()
+        let animals = animals.shuffled()
+
+        // correct answer + 9 other answers + 6 animals
+        answers = (
+            [.number(value: answer)] +
+                allAnswers[..<9].map { .number(value: $0) } +
+                animals[..<6].map { .animal(id: $0) }
+        ).shuffled()
     }
 
     func answerTapped(_ answer: Int) {
@@ -231,8 +261,8 @@ enum BlockColor: String, CaseIterable {
 }
 
 struct AnswerButton: View {
-    var answer: Int
-    var action: (Int) -> Void
+    let answer: Int
+    let action: (Int) -> Void
     @State private var color = BlockColor.allCases.randomElement()!
 
     private var textColor: Color {
@@ -260,6 +290,17 @@ struct AnswerButton: View {
                     .offset(y: -2)
             }
         }
+    }
+}
+
+struct AnimalBlock: View {
+    let animal: String
+
+    var body: some View {
+        Image(animal)
+            .resizable()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .aspectRatio(1, contentMode: .fill)
     }
 }
 

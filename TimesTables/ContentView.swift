@@ -280,7 +280,8 @@ struct GameView: View {
             }
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
+        let delay = isCorrect ? 0.75 : 1.5
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
             if questionNumber >= (questions.count - 1) {
                 exit()
             } else {

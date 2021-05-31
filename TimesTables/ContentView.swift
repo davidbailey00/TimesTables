@@ -34,12 +34,22 @@ func getAllAnswers() -> Set<Int> {
 }
 
 struct ContentView: View {
+    @State private var timesTable = 2
+    @State private var maxMultiplier = 10
+    @State private var questionAmount = QuestionAmount.ten
+    @State private var randomOrder = true
     @State private var questions: [Question]? = nil
 
     var body: some View {
         NavigationView {
             if questions == nil {
-                SettingsForm(questions: $questions)
+                SettingsForm(
+                    timesTable: $timesTable,
+                    maxMultiplier: $maxMultiplier,
+                    questionAmount: $questionAmount,
+                    randomOrder: $randomOrder,
+                    questions: $questions
+                )
             } else {
                 GameView(questions: questions!, exit: exit)
             }
@@ -52,12 +62,11 @@ struct ContentView: View {
 }
 
 struct SettingsForm: View {
+    @Binding var timesTable: Int
+    @Binding var maxMultiplier: Int
+    @Binding var questionAmount: QuestionAmount
+    @Binding var randomOrder: Bool
     @Binding var questions: [Question]?
-
-    @State private var timesTable = 2
-    @State private var maxMultiplier = 10
-    @State private var questionAmount = QuestionAmount.ten
-    @State private var randomOrder = true
 
     var body: some View {
         Form {

@@ -21,6 +21,18 @@ struct Question {
     var multiplier: Int
 }
 
+func getAllAnswers() -> Set<Int> {
+    var answers = [Int]()
+
+    for i in 2 ... 12 {
+        for j in 2 ... 12 {
+            answers.append(i * j)
+        }
+    }
+
+    return Set(answers)
+}
+
 struct ContentView: View {
     @State private var questions: [Question]? = nil
 
@@ -28,8 +40,14 @@ struct ContentView: View {
         NavigationView {
             if questions == nil {
                 SettingsForm(questions: $questions)
+            } else {
+                GameView(questions: questions!, exit: exit)
             }
         }
+    }
+
+    func exit() {
+        questions = nil
     }
 }
 
@@ -111,6 +129,71 @@ struct SettingsForm: View {
         } else {
             self.questions = questions
         }
+    }
+}
+
+struct GameView: View {
+    var questions: [Question]
+    var exit: () -> Void
+
+    @State private var questionNumber = 0
+    @State private var answers = [Int]()
+
+    private var question: Question { questions[questionNumber] }
+    private var answer: Int { question.multiplicand * question.multiplier }
+
+    let columns = Array(repeating: GridItem(.flexible()), count: 4)
+
+    var body: some View {
+        VStack {
+            LazyVGrid(columns: columns, spacing: 8) {
+                ForEach(answers, id: \.self) { answer in
+                    Button(action: {
+                        // @TODO
+                    }) {
+                        Text("\(answer)")
+                            .font(.system(size: 30))
+                            .fontWeight(.black)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .aspectRatio(1, contentMode: .fill)
+                    }
+                    .background(Color.accentColor)
+                    .foregroundColor(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+            }
+
+            Spacer()
+
+            Text("Score: 0")
+                .font(.title)
+                .fontWeight(.bold)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .navigationTitle(
+            "\(question.multiplicand) × \(question.multiplier) ="
+        )
+        .navigationBarItems(
+            leading: Button(action: exit) {
+                HStack(spacing: 4) {
+                    Image(systemName: "chevron.backward")
+                    Text("Back")
+                        .fontWeight(.regular)
+                }
+            }
+        )
+        .padding()
+        .onAppear(perform: generateAnswers)
+    }
+
+    func generateAnswers() {
+        // shuffle + remove correct answer
+        let allAnswers = getAllAnswers()
+            .shuffled()
+            .filter { $0 != answer }
+
+        // take 15 + add correct answer + shuffle
+        answers = (allAnswers[..<15] + [answer]).shuffled()
     }
 }
 

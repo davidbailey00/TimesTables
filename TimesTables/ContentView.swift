@@ -267,22 +267,16 @@ struct GameView: View {
             case .number(let value, _):
                 if value == self.answer {
                     // the actual correct answer
-                    if isCorrect {
-                        // ...and the user chose it
-                        answers[i].applyEffect(.correct)
-                    } else {
-                        // ...but the user was wrong
-                        answers[i].applyEffect(.reveal)
-                    }
+                    answers[i].applyEffect(isCorrect ? .correct : .reveal)
                 } else if value == answer {
-                    // the wrong answer chosen
+                    // the incorrect answer that was chosen
                     answers[i].applyEffect(.sadness)
                 } else {
-                    // some other answer
+                    // all other answers shown
                     answers[i].applyEffect(.fadeOut)
                 }
             case .animal:
-                answers[i].applyEffect(.fadeOut)
+                answers[i].applyEffect(isCorrect ? .fadeOut : .sadness)
             }
         }
 
@@ -352,13 +346,18 @@ struct AnswerButton: View {
 struct AnimalBlock: View {
     let animal: String
     let effect: Effect?
+    @State private var fallLeft = Bool.random()
 
     var body: some View {
         Image(animal)
             .resizable()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .aspectRatio(1, contentMode: .fill)
-            .opacity(effect == .fadeOut ? 0.5 : 1)
+            .opacity(effect == .fadeOut || effect == .sadness ? 0.5 : 1)
+            .rotationEffect(
+                effect == .sadness ?
+                    .degrees(fallLeft ? -90 : 90) : .zero
+            )
     }
 }
 

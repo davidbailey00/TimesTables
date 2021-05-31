@@ -16,10 +16,18 @@ enum QuestionAmount: String, CaseIterable, Identifiable {
     var id: String { self.rawValue }
 }
 
+struct Question {
+    var multiplicand: Int
+    var multiplier: Int
+}
+
 struct ContentView: View {
     @State private var timesTable = 2
+    @State private var maxMultiplier = 10
+
     @State private var questionAmount = QuestionAmount.ten
     @State private var randomOrder = true
+    @State private var questions: [Question]? = nil
 
     var body: some View {
         NavigationView {
@@ -27,6 +35,10 @@ struct ContentView: View {
                 Section(header: Text("Game settings")) {
                     Stepper(value: $timesTable, in: 2 ... 12) {
                         Text("\(timesTable) times table")
+                    }
+
+                    Stepper(value: $maxMultiplier, in: 3 ... 12) {
+                        Text("Up to \(timesTable) × \(maxMultiplier)")
                     }
 
                     HStack {

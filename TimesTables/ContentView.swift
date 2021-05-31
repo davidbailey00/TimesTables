@@ -13,7 +13,7 @@ enum QuestionAmount: String, CaseIterable, Identifiable {
     case twenty = "20"
     case all = "All"
 
-    var id: String { self.rawValue }
+    var id: String { rawValue }
 }
 
 struct Question {
@@ -24,10 +24,11 @@ struct Question {
 struct ContentView: View {
     @State private var timesTable = 2
     @State private var maxMultiplier = 10
-
     @State private var questionAmount = QuestionAmount.ten
     @State private var randomOrder = true
+
     @State private var questions: [Question]? = nil
+    @State private var questionNumber = 0
 
     var body: some View {
         NavigationView {
@@ -60,7 +61,16 @@ struct ContentView: View {
 
                 Section {
                     Button(action: {
-                        // @TODO
+                        switch questionAmount {
+                        case .five:
+                            generateRandomQuestions(5)
+                        case .ten:
+                            generateRandomQuestions(10)
+                        case .twenty:
+                            generateRandomQuestions(20)
+                        case .all:
+                            generateAllQuestions()
+                        }
                     }) {
                         HStack {
                             Image(systemName: "play.circle.fill")
@@ -70,6 +80,27 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("Times Tables")
+        }
+    }
+
+    func generateRandomQuestions(_ amount: Int) {
+        questions = (1 ... amount).map { _ in
+            Question(
+                multiplicand: timesTable,
+                multiplier: Int.random(in: 2 ... maxMultiplier)
+            )
+        }
+    }
+
+    func generateAllQuestions() {
+        let questions = (2 ... maxMultiplier).map { multiplier in
+            Question(multiplicand: timesTable, multiplier: multiplier)
+        }
+
+        if randomOrder {
+            self.questions = questions.shuffled()
+        } else {
+            self.questions = questions
         }
     }
 }

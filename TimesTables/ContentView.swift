@@ -161,6 +161,7 @@ struct GameView: View {
                 ForEach(answers, id: \.self) { answer in
                     AnswerButton(answer: answer, action: answerTapped)
                 }
+                .animation(.spring())
             }
 
             Spacer()

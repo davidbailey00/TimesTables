@@ -139,14 +139,28 @@ func getAllAnswers() -> Set<Int> {
     return Set(answers)
 }
 
+enum Effect {
+    case correct
+    case fadeOut
+}
+
 enum Answer: Identifiable {
-    case number(value: Int)
-    case animal(id: String)
+    case number(value: Int, effect: Effect? = nil)
+    case animal(id: String, effect: Effect? = nil)
 
     var id: String {
         switch self {
-        case .number(let value): return "\(value)"
-        case .animal(let id): return id
+        case .number(let value, _): return "\(value)"
+        case .animal(let id, _): return id
+        }
+    }
+
+    mutating func applyEffect(_ effect: Effect) {
+        switch self {
+        case .number(let value, _):
+            self = .number(value: value, effect: effect)
+        case .animal(let id, _):
+            self = .animal(id: id, effect: effect)
         }
     }
 }
@@ -177,10 +191,14 @@ struct GameView: View {
             LazyVGrid(columns: columns, spacing: 8) {
                 ForEach(answers) { answer in
                     switch answer {
-                    case .number(let value):
-                        AnswerButton(answer: value, action: answerTapped)
-                    case .animal(let id):
-                        AnimalBlock(animal: id)
+                    case .number(let value, let effect):
+                        AnswerButton(
+                            answer: value,
+                            effect: effect,
+                            action: answerTapped
+                        )
+                    case .animal(let id, let effect):
+                        AnimalBlock(animal: id, effect: effect)
                     }
                 }
                 .animation(.spring())
@@ -237,15 +255,30 @@ struct GameView: View {
 
     func answerTapped(_ answer: Int) {
         if answer == self.answer {
+            for i in 0 ..< answers.count {
+                switch answers[i] {
+                case .number(let value, _):
+                    if value == answer {
+                        answers[i].applyEffect(.correct)
+                    } else {
+                        answers[i].applyEffect(.fadeOut)
+                    }
+                case .animal:
+                    answers[i].applyEffect(.fadeOut)
+                }
+            }
+
             score += 1
         }
 
-        if questionNumber >= (questions.count - 1) {
-            exit()
-        } else {
-            questionNumber += 1
-            flipped = Bool.random()
-            generateAnswers()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
+            if questionNumber >= (questions.count - 1) {
+                exit()
+            } else {
+                questionNumber += 1
+                flipped = Bool.random()
+                generateAnswers()
+            }
         }
     }
 }
@@ -260,6 +293,7 @@ enum BlockColor: String, CaseIterable {
 
 struct AnswerButton: View {
     let answer: Int
+    let effect: Effect?
     let action: (Int) -> Void
     @State private var color = BlockColor.allCases.randomElement()!
 
@@ -288,17 +322,26 @@ struct AnswerButton: View {
                     .offset(y: -2)
             }
         }
+        .opacity(effect == .fadeOut ? 0.25 : 1)
+        .rotation3DEffect(
+            .degrees(effect == .correct ? 360 : 0),
+            axis: (x: 0, y: 1, z: 0)
+        )
+        .scaleEffect(effect == .correct ? 1.5 : 1)
+        .zIndex(effect == .correct ? 1 : 0)
     }
 }
 
 struct AnimalBlock: View {
     let animal: String
+    let effect: Effect?
 
     var body: some View {
         Image(animal)
             .resizable()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .aspectRatio(1, contentMode: .fill)
+            .opacity(effect == .fadeOut ? 0.5 : 1)
     }
 }
 

@@ -33,8 +33,8 @@ struct ContentView: View {
                         Text("Questions")
                         Spacer()
                         Picker("Questions", selection: $questionAmount) {
-                            ForEach(QuestionAmount.allCases, id: \.self) { amount in
-                                Text(amount.rawValue)
+                            ForEach(QuestionAmount.allCases, id: \.self) {
+                                Text($0.rawValue)
                             }
                         }
                         .pickerStyle(SegmentedPickerStyle())

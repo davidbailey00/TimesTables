@@ -24,20 +24,20 @@ struct ContentView: View {
         NavigationView {
             Form {
                 Section(header: Text("Game settings")) {
-                    Picker("Table", selection: $timesTable) {
-                        ForEach(2 ..< 13, id: \.self) {
-                            Text("\($0) times table")
-                        }
+                    Stepper(value: $timesTable, in: 2 ... 12) {
+                        Text("\(timesTable) times table")
                     }
 
-                    HStack(spacing: 40) {
+                    HStack {
                         Text("Questions")
+                        Spacer()
                         Picker("Questions", selection: $questionAmount) {
                             ForEach(QuestionAmount.allCases, id: \.self) { amount in
                                 Text(amount.rawValue)
                             }
                         }
                         .pickerStyle(SegmentedPickerStyle())
+                        .frame(maxWidth: 184)
                     }
                 }
 

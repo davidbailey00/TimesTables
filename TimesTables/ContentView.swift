@@ -175,10 +175,18 @@ struct GameView: View {
 
             Spacer()
 
-            Text("Score: \(score)")
-                .font(.title)
+            HStack(alignment: .bottom) {
+                Text("Score: \(score)")
+                    .font(.title)
+                    .fontWeight(.bold)
+
+                Spacer()
+
+                Text(
+                    "Question \(questionNumber + 1) of \(questions.count)"
+                )
                 .fontWeight(.bold)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
         .navigationTitle(
             "\(question.multiplicand) × \(question.multiplier) ="

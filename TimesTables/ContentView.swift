@@ -19,6 +19,7 @@ enum QuestionAmount: String, CaseIterable, Identifiable {
 struct ContentView: View {
     @State private var timesTable = 2
     @State private var questionAmount = QuestionAmount.ten
+    @State private var randomOrder = true
 
     var body: some View {
         NavigationView {
@@ -38,6 +39,10 @@ struct ContentView: View {
                         }
                         .pickerStyle(SegmentedPickerStyle())
                         .frame(maxWidth: 184)
+                    }
+
+                    if questionAmount == .all {
+                        Toggle("Random order", isOn: $randomOrder)
                     }
                 }
 

@@ -148,6 +148,7 @@ struct GameView: View {
     @State private var score = 0
     @State private var questionNumber = 0
     @State private var answers = [Int]()
+    @State private var flipped = Bool.random()
 
     private var question: Question { questions[questionNumber] }
     private var answer: Int { question.multiplicand * question.multiplier }
@@ -189,7 +190,9 @@ struct GameView: View {
             }
         }
         .navigationTitle(
-            "\(question.multiplicand) × \(question.multiplier) ="
+            flipped ?
+                "\(question.multiplier) × \(question.multiplicand) =" :
+                "\(question.multiplicand) × \(question.multiplier) ="
         )
         .navigationBarItems(
             leading: Button(action: exit) {
@@ -223,6 +226,7 @@ struct GameView: View {
             exit()
         } else {
             questionNumber += 1
+            flipped = Bool.random()
             generateAnswers()
         }
     }

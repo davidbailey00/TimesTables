@@ -141,6 +141,8 @@ func getAllAnswers() -> Set<Int> {
 
 enum Effect {
     case correct
+    case reveal
+    case sadness
     case fadeOut
 }
 
@@ -254,21 +256,34 @@ struct GameView: View {
     }
 
     func answerTapped(_ answer: Int) {
-        if answer == self.answer {
-            for i in 0 ..< answers.count {
-                switch answers[i] {
-                case .number(let value, _):
-                    if value == answer {
+        let isCorrect = answer == self.answer
+
+        if isCorrect {
+            score += 1
+        }
+
+        for i in 0 ..< answers.count {
+            switch answers[i] {
+            case .number(let value, _):
+                if value == self.answer {
+                    // the actual correct answer
+                    if isCorrect {
+                        // ...and the user chose it
                         answers[i].applyEffect(.correct)
                     } else {
-                        answers[i].applyEffect(.fadeOut)
+                        // ...but the user was wrong
+                        answers[i].applyEffect(.reveal)
                     }
-                case .animal:
+                } else if value == answer {
+                    // the wrong answer chosen
+                    answers[i].applyEffect(.sadness)
+                } else {
+                    // some other answer
                     answers[i].applyEffect(.fadeOut)
                 }
+            case .animal:
+                answers[i].applyEffect(.fadeOut)
             }
-
-            score += 1
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
@@ -322,13 +337,15 @@ struct AnswerButton: View {
                     .offset(y: -2)
             }
         }
-        .opacity(effect == .fadeOut ? 0.25 : 1)
+        .disabled(effect != nil)
+        .opacity(effect == .fadeOut || effect == .sadness ? 0.25 : 1)
         .rotation3DEffect(
             .degrees(effect == .correct ? 360 : 0),
             axis: (x: 0, y: 1, z: 0)
         )
-        .scaleEffect(effect == .correct ? 1.5 : 1)
-        .zIndex(effect == .correct ? 1 : 0)
+        .scaleEffect(effect == .correct || effect == .reveal ? 1.5 : 1)
+        .scaleEffect(effect == .sadness ? 0.75 : 1)
+        .zIndex(effect == .correct || effect == .reveal ? 1 : 0)
     }
 }
 

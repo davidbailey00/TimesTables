@@ -145,6 +145,7 @@ struct GameView: View {
     var questions: [Question]
     var exit: () -> Void
 
+    @State private var score = 0
     @State private var questionNumber = 0
     @State private var answers = [Int]()
 
@@ -158,7 +159,7 @@ struct GameView: View {
             LazyVGrid(columns: columns, spacing: 8) {
                 ForEach(answers, id: \.self) { answer in
                     Button(action: {
-                        // @TODO
+                        answerTapped(answer)
                     }) {
                         Text("\(answer)")
                             .font(.system(size: 30))
@@ -174,7 +175,7 @@ struct GameView: View {
 
             Spacer()
 
-            Text("Score: 0")
+            Text("Score: \(score)")
                 .font(.title)
                 .fontWeight(.bold)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -203,6 +204,19 @@ struct GameView: View {
 
         // take 15 + add correct answer + shuffle
         answers = (allAnswers[..<15] + [answer]).shuffled()
+    }
+
+    func answerTapped(_ answer: Int) {
+        if answer == self.answer {
+            score += 1
+        }
+
+        if questionNumber >= (questions.count - 1) {
+            exit()
+        } else {
+            questionNumber += 1
+            generateAnswers()
+        }
     }
 }
 

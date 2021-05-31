@@ -84,23 +84,21 @@ struct SettingsForm: View {
                 }
             }
 
-            Section {
-                Button(action: {
-                    switch questionAmount {
-                    case .five:
-                        generateRandomQuestions(5)
-                    case .ten:
-                        generateRandomQuestions(10)
-                    case .twenty:
-                        generateRandomQuestions(20)
-                    case .all:
-                        generateAllQuestions()
-                    }
-                }) {
-                    HStack {
-                        Image(systemName: "play.circle.fill")
-                        Text("Start game")
-                    }
+            Button(action: {
+                switch questionAmount {
+                case .five:
+                    generateRandomQuestions(5)
+                case .ten:
+                    generateRandomQuestions(10)
+                case .twenty:
+                    generateRandomQuestions(20)
+                case .all:
+                    generateAllQuestions()
+                }
+            }) {
+                HStack {
+                    Image(systemName: "play.circle.fill")
+                    Text("Start game")
                 }
             }
         }

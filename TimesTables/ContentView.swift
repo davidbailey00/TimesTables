@@ -21,18 +21,6 @@ struct Question {
     var multiplier: Int
 }
 
-func getAllAnswers() -> Set<Int> {
-    var answers = [Int]()
-
-    for i in 2 ... 12 {
-        for j in 2 ... 12 {
-            answers.append(i * j)
-        }
-    }
-
-    return Set(answers)
-}
-
 struct ContentView: View {
     @State private var timesTable = 2
     @State private var maxMultiplier = 10
@@ -141,6 +129,18 @@ struct SettingsForm: View {
     }
 }
 
+func getAllAnswers() -> Set<Int> {
+    var answers = [Int]()
+
+    for i in 2 ... 12 {
+        for j in 2 ... 12 {
+            answers.append(i * j)
+        }
+    }
+
+    return Set(answers)
+}
+
 struct GameView: View {
     var questions: [Question]
     var exit: () -> Void
@@ -159,18 +159,7 @@ struct GameView: View {
         VStack {
             LazyVGrid(columns: columns, spacing: 8) {
                 ForEach(answers, id: \.self) { answer in
-                    Button(action: {
-                        answerTapped(answer)
-                    }) {
-                        Text("\(answer)")
-                            .font(.system(size: 30))
-                            .fontWeight(.black)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .aspectRatio(1, contentMode: .fill)
-                    }
-                    .background(Color.accentColor)
-                    .foregroundColor(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    AnswerButton(answer: answer, action: answerTapped)
                 }
             }
 
@@ -228,6 +217,47 @@ struct GameView: View {
             questionNumber += 1
             flipped = Bool.random()
             generateAnswers()
+        }
+    }
+}
+
+enum BlockColor: String, CaseIterable {
+    case blue
+    case green
+    case grey
+    case red
+    case yellow
+}
+
+struct AnswerButton: View {
+    var answer: Int
+    var action: (Int) -> Void
+    @State private var color = BlockColor.allCases.randomElement()!
+
+    private var textColor: Color {
+        switch color {
+        case .blue: return .white
+        case .green: return .black
+        case .grey: return .black
+        case .red: return .white
+        case .yellow: return .black
+        }
+    }
+
+    var body: some View {
+        Button(action: { action(answer) }) {
+            ZStack {
+                Image("\(color.rawValue)_button")
+                    .renderingMode(.original)
+                    .resizable()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .aspectRatio(1, contentMode: .fill)
+                Text("\(answer)")
+                    .font(.system(size: 30))
+                    .fontWeight(.black)
+                    .foregroundColor(textColor)
+                    .offset(y: -2)
+            }
         }
     }
 }

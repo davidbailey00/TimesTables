@@ -197,7 +197,7 @@ enum Answer: Identifiable {
     }
 }
 
-let animals = [
+let allAnimals = [
     "bear", "buffalo", "chick", "chicken", "cow", "crocodile", "dog", "duck",
     "elephant", "frog", "giraffe", "goat", "gorilla", "hippo", "horse",
     "monkey", "moose", "narwhal", "owl", "panda", "parrot", "penguin", "pig",
@@ -294,7 +294,7 @@ struct GameView: View {
             .shuffled()
             .filter { $0 != answer }
 
-        let animals = animals.shuffled()
+        let animals = allAnimals.shuffled()
 
         // correct answer + 9 other answers + 6 animals
         answers = (
@@ -417,10 +417,49 @@ struct GameOver: View {
     var score: Int
     var questions: Int
 
+    let columns = Array(repeating: GridItem(.flexible()), count: 4)
+    @State private var animals = allAnimals.shuffled()[..<16]
+
     var body: some View {
-        HStack {
-            Text("You scored \(score) out of \(questions)")
+        VStack {
+            LazyVGrid(columns: columns) {
+                ForEach(0 ..< 8) {
+                    AnimalBlock(animal: animals[$0], effect: nil)
+                }
+            }
+            Spacer()
+
+            Text("You scored:")
+                .font(.title)
+            Text("\(score) out of \(questions)")
+                .font(.largeTitle)
+                .fontWeight(.black)
+                .foregroundColor(.green)
+
+            Spacer()
+            LazyVGrid(columns: columns) {
+                ForEach(8 ..< 16) {
+                    AnimalBlock(animal: animals[$0], effect: nil)
+                }
+            }
+
+            HStack(alignment: .bottom) {
+                Button(action: {}) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.backward")
+                        Text("Exit")
+                    }
+                }
+                Spacer()
+                Button(action: {}) {
+                    Text("Play again")
+                        .font(.title)
+                        .fontWeight(.bold)
+                    Image(systemName: "play.circle.fill")
+                }
+            }
         }
+        .padding()
         .navigationTitle("Well done!")
         // hack: work around possible SwiftUI bug where
         // "Correct!" persists after the game is over
@@ -431,5 +470,13 @@ struct GameOver: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+    }
+}
+
+struct GameOver_Previews: PreviewProvider {
+    static var previews: some View {
+        NavigationView {
+            GameOver(score: 2, questions: 4)
+        }
     }
 }

@@ -182,6 +182,7 @@ struct GameView: View {
     @State private var questionNumber = 0
     @State private var answers = [Answer]()
     @State private var flipped = Bool.random()
+    @State private var isCorrect: Bool? = nil
 
     private var question: Question { questions[questionNumber] }
     private var answer: Int { question.multiplicand * question.multiplier }
@@ -233,7 +234,12 @@ struct GameView: View {
                     Text("Back")
                         .fontWeight(.regular)
                 }
-            }
+            },
+            trailing: isCorrect == true ?
+                Text("Correct!").foregroundColor(.green) :
+                isCorrect == false ?
+                Text("Incorrect.").foregroundColor(.red) :
+                nil
         )
         .padding()
         .onAppear(perform: generateAnswers)
@@ -257,6 +263,7 @@ struct GameView: View {
 
     func answerTapped(_ answer: Int) {
         let isCorrect = answer == self.answer
+        self.isCorrect = isCorrect
 
         if isCorrect {
             score += 1
@@ -282,6 +289,7 @@ struct GameView: View {
 
         let delay = isCorrect ? 0.75 : 1.5
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            self.isCorrect = nil
             if questionNumber >= (questions.count - 1) {
                 exit()
             } else {

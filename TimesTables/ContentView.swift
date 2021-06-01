@@ -103,6 +103,9 @@ struct SettingsForm: View {
             }
         }
         .navigationTitle("Times Tables")
+        // hack: work around possible SwiftUI bug where
+        // "Correct!" persists after the game is over
+        .navigationBarItems(trailing: EmptyView())
     }
 
     func generateRandomQuestions(_ amount: Int) {
@@ -181,11 +184,13 @@ struct GameView: View {
     @State private var score = 0
     @State private var questionNumber = 0
     @State private var answers = [Answer]()
-    @State private var flipped = Bool.random()
-    @State private var isCorrect: Bool? = nil
 
     private var question: Question { questions[questionNumber] }
     private var answer: Int { question.multiplicand * question.multiplier }
+
+    @State private var flipped = Bool.random()
+    @State private var isCorrect: Bool? = nil
+    @State private var showingAlert = false
 
     let columns = Array(repeating: GridItem(.flexible()), count: 4)
 
@@ -228,7 +233,9 @@ struct GameView: View {
                 "\(question.multiplicand) × \(question.multiplier) ="
         )
         .navigationBarItems(
-            leading: Button(action: exit) {
+            leading: Button(action: {
+                showingAlert = true
+            }) {
                 HStack(spacing: 4) {
                     Image(systemName: "chevron.backward")
                     Text("Back")
@@ -241,6 +248,14 @@ struct GameView: View {
                 Text("Incorrect.").foregroundColor(.red) :
                 nil
         )
+        .alert(isPresented: $showingAlert) {
+            Alert(
+                title: Text("Confirm exit"),
+                message: Text("Are you sure you want to exit?"),
+                primaryButton: .destructive(Text("Exit"), action: exit),
+                secondaryButton: .cancel()
+            )
+        }
         .padding()
         .onAppear(perform: generateAnswers)
     }

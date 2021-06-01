@@ -21,31 +21,47 @@ struct Question {
     var multiplier: Int
 }
 
+enum GameState {
+    case settings
+    case playing
+    case ending
+}
+
 struct ContentView: View {
+    @State private var gameState = GameState.settings
+    @State private var questions = [Question]()
+
     @State private var timesTable = 2
     @State private var maxMultiplier = 10
     @State private var questionAmount = QuestionAmount.ten
     @State private var randomOrder = true
-    @State private var questions: [Question]? = nil
 
     var body: some View {
         NavigationView {
-            if questions == nil {
+            switch gameState {
+            case .settings:
                 SettingsForm(
                     timesTable: $timesTable,
                     maxMultiplier: $maxMultiplier,
                     questionAmount: $questionAmount,
                     randomOrder: $randomOrder,
-                    questions: $questions
+                    start: start
                 )
-            } else {
-                GameView(questions: questions!, exit: exit)
+            case .playing:
+                GameView(questions: questions, exit: exit)
+            case .ending:
+                Text("TODO")
             }
         }
     }
 
+    func start(questions: [Question]) {
+        self.questions = questions
+        gameState = .playing
+    }
+
     func exit() {
-        questions = nil
+        gameState = .settings
     }
 }
 
@@ -54,7 +70,7 @@ struct SettingsForm: View {
     @Binding var maxMultiplier: Int
     @Binding var questionAmount: QuestionAmount
     @Binding var randomOrder: Bool
-    @Binding var questions: [Question]?
+    var start: ([Question]) -> Void
 
     var body: some View {
         Form {
@@ -109,12 +125,13 @@ struct SettingsForm: View {
     }
 
     func generateRandomQuestions(_ amount: Int) {
-        questions = (1 ... amount).map { _ in
+        let questions = (1 ... amount).map { _ in
             Question(
                 multiplicand: timesTable,
                 multiplier: Int.random(in: 2 ... maxMultiplier)
             )
         }
+        start(questions)
     }
 
     func generateAllQuestions() {
@@ -123,9 +140,9 @@ struct SettingsForm: View {
         }
 
         if randomOrder {
-            self.questions = questions.shuffled()
+            start(questions.shuffled())
         } else {
-            self.questions = questions
+            start(questions)
         }
     }
 }

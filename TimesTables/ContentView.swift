@@ -58,14 +58,46 @@ struct ContentView: View {
                 GameOver(
                     score: score,
                     questions: questions.count,
-                    exit: exit
+                    exit: exit,
+                    start: start
                 )
             }
         }
     }
 
-    func start(questions: [Question]) {
-        self.questions = questions
+    func generateRandomQuestions(_ amount: Int) -> [Question] {
+        return (1 ... amount).map { _ in
+            Question(
+                multiplicand: timesTable,
+                multiplier: Int.random(in: 2 ... maxMultiplier)
+            )
+        }
+    }
+
+    func generateAllQuestions() -> [Question] {
+        let questions = (2 ... maxMultiplier).map { multiplier in
+            Question(multiplicand: timesTable, multiplier: multiplier)
+        }
+
+        if randomOrder {
+            return questions.shuffled()
+        } else {
+            return questions
+        }
+    }
+
+    func start() {
+        switch questionAmount {
+        case .five:
+            questions = generateRandomQuestions(5)
+        case .ten:
+            questions = generateRandomQuestions(10)
+        case .twenty:
+            questions = generateRandomQuestions(20)
+        case .all:
+            questions = generateAllQuestions()
+        }
+
         gameState = .playing
     }
 
@@ -84,7 +116,7 @@ struct SettingsForm: View {
     @Binding var maxMultiplier: Int
     @Binding var questionAmount: QuestionAmount
     @Binding var randomOrder: Bool
-    var start: ([Question]) -> Void
+    var start: () -> Void
 
     var body: some View {
         Form {
@@ -114,18 +146,7 @@ struct SettingsForm: View {
                 }
             }
 
-            Button(action: {
-                switch questionAmount {
-                case .five:
-                    generateRandomQuestions(5)
-                case .ten:
-                    generateRandomQuestions(10)
-                case .twenty:
-                    generateRandomQuestions(20)
-                case .all:
-                    generateAllQuestions()
-                }
-            }) {
+            Button(action: start) {
                 HStack {
                     Image(systemName: "play.circle.fill")
                     Text("Start game")
@@ -133,28 +154,6 @@ struct SettingsForm: View {
             }
         }
         .navigationTitle("Times Tables")
-    }
-
-    func generateRandomQuestions(_ amount: Int) {
-        let questions = (1 ... amount).map { _ in
-            Question(
-                multiplicand: timesTable,
-                multiplier: Int.random(in: 2 ... maxMultiplier)
-            )
-        }
-        start(questions)
-    }
-
-    func generateAllQuestions() {
-        let questions = (2 ... maxMultiplier).map { multiplier in
-            Question(multiplicand: timesTable, multiplier: multiplier)
-        }
-
-        if randomOrder {
-            start(questions.shuffled())
-        } else {
-            start(questions)
-        }
     }
 }
 
@@ -418,6 +417,7 @@ struct GameOver: View {
     var score: Int
     var questions: Int
     var exit: () -> Void
+    var start: () -> Void
 
     let columns = Array(repeating: GridItem(.flexible()), count: 4)
     @State private var animals = allAnimals.shuffled()[..<16]
@@ -453,7 +453,7 @@ struct GameOver: View {
                     }
                 }
                 Spacer()
-                Button(action: {}) {
+                Button(action: start) {
                     Text("Play again")
                         .font(.title)
                         .fontWeight(.bold)
@@ -478,7 +478,7 @@ struct ContentView_Previews: PreviewProvider {
 struct GameOver_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            GameOver(score: 2, questions: 4, exit: {})
+            GameOver(score: 2, questions: 4, exit: {}, start: {})
         }
     }
 }

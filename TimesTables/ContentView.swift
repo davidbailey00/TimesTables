@@ -57,7 +57,8 @@ struct ContentView: View {
             case .ending:
                 GameOver(
                     score: score,
-                    questions: questions.count
+                    questions: questions.count,
+                    exit: exit
                 )
             }
         }
@@ -416,6 +417,7 @@ struct AnimalBlock: View {
 struct GameOver: View {
     var score: Int
     var questions: Int
+    var exit: () -> Void
 
     let columns = Array(repeating: GridItem(.flexible()), count: 4)
     @State private var animals = allAnimals.shuffled()[..<16]
@@ -444,7 +446,7 @@ struct GameOver: View {
             }
 
             HStack(alignment: .bottom) {
-                Button(action: {}) {
+                Button(action: exit) {
                     HStack(spacing: 4) {
                         Image(systemName: "chevron.backward")
                         Text("Exit")
@@ -476,7 +478,7 @@ struct ContentView_Previews: PreviewProvider {
 struct GameOver_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            GameOver(score: 2, questions: 4)
+            GameOver(score: 2, questions: 4, exit: {})
         }
     }
 }

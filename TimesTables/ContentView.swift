@@ -30,6 +30,7 @@ enum GameState {
 struct ContentView: View {
     @State private var gameState = GameState.settings
     @State private var questions = [Question]()
+    @State private var score = 0
 
     @State private var timesTable = 2
     @State private var maxMultiplier = 10
@@ -48,9 +49,16 @@ struct ContentView: View {
                     start: start
                 )
             case .playing:
-                GameView(questions: questions, exit: exit)
+                GameView(
+                    questions: questions,
+                    exit: exit,
+                    finish: finish
+                )
             case .ending:
-                Text("TODO")
+                GameOver(
+                    score: score,
+                    questions: questions.count
+                )
             }
         }
     }
@@ -62,6 +70,11 @@ struct ContentView: View {
 
     func exit() {
         gameState = .settings
+    }
+
+    func finish(score: Int) {
+        self.score = score
+        gameState = .ending
     }
 }
 
@@ -119,9 +132,6 @@ struct SettingsForm: View {
             }
         }
         .navigationTitle("Times Tables")
-        // hack: work around possible SwiftUI bug where
-        // "Correct!" persists after the game is over
-        .navigationBarItems(trailing: EmptyView())
     }
 
     func generateRandomQuestions(_ amount: Int) {
@@ -197,6 +207,7 @@ let animals = [
 struct GameView: View {
     var questions: [Question]
     var exit: () -> Void
+    var finish: (Int) -> Void
 
     @State private var score = 0
     @State private var questionNumber = 0
@@ -323,7 +334,7 @@ struct GameView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
             self.isCorrect = nil
             if questionNumber >= (questions.count - 1) {
-                exit()
+                finish(score)
             } else {
                 questionNumber += 1
                 flipped = Bool.random()
@@ -399,6 +410,21 @@ struct AnimalBlock: View {
                 effect == .sadness ?
                     .degrees(fallLeft ? -90 : 90) : .zero
             )
+    }
+}
+
+struct GameOver: View {
+    var score: Int
+    var questions: Int
+
+    var body: some View {
+        HStack {
+            Text("You scored \(score) out of \(questions)")
+        }
+        .navigationTitle("Well done!")
+        // hack: work around possible SwiftUI bug where
+        // "Correct!" persists after the game is over
+        .navigationBarItems(trailing: EmptyView())
     }
 }
 
